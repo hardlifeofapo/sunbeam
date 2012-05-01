@@ -1,0 +1,12 @@
+{ "name"            : "sunbeam"
+, "description"     : "minimalistic and robust S3 upload for node.js"
+, "homepage"        : "http://www.presive.com"
+, "repository"      : "git://github.com/Presive/sunbeam"
+, "version"         : "0.0.1"
+, "author"          : "Patrick Heneise <patrick@presive.com> (http://presive.com)"
+, "contributors"    : []
+, "keywords"        : []
+, "dependencies"    : { "mime": "*", "xml2js": "*" }
+, "main"            : "./sunbeam.js"
+, "engines"         : { "node": ">=0.3.6" }
+}
