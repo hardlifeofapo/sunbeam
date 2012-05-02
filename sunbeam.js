@@ -17,8 +17,14 @@ module.exports = S3Put = (function() {
     this.secure = secure != null ? secure : true;
     this.timeout = timeout != null ? timeout : 60 * 1000;
   }
-  S3Put.prototype.put = function(filePath, resource, amzHeaders, callback) {
-    var mimeType;
+  S3Put.prototype.put = function(filePath, resource, headers, callback) {
+    var mimeType, k;
+    var amzHeaders = {};
+    for(k in headers) {
+      if(headers[k].indexOf("x-amz") === 0) {
+        amzHeaders[k] = headers[k];
+      }
+    }
     mimeType = mime.lookup(filePath);
     return fs.stat(filePath, __bind(function(err, stats) {
       var contentLength, md5Hash, rs;
@@ -37,7 +43,7 @@ module.exports = S3Put = (function() {
         date = new Date();
         httpOptions = {
           host: "s3.amazonaws.com",
-          path: "/" + this.bucket + resource,
+          path: "/" + this.bucket + "/" + resource,
           headers: {
             "Authorization": "AWS " + this.awsKey + ":" + (this.sign(resource, md5, mimeType, date, amzHeaders)),
             "Date": date.toUTCString(),
@@ -48,9 +54,8 @@ module.exports = S3Put = (function() {
           },
           method: "PUT"
         };
-        for (k in amzHeaders) {
-          v = amzHeaders[k];
-          httpOptions.headers[k] = v;
+        for (k in headers) {
+          httpOptions.headers[k] = headers[k];
         }
         timeout = null;
         req = (this.secure ? https : http).request(httpOptions, __bind(function(res) {
@@ -96,7 +101,7 @@ module.exports = S3Put = (function() {
   };
   S3Put.prototype.sign = function(resource, md5, contentType, date, amzHeaders) {
     var data;
-    data = ["PUT", md5, contentType, date.toUTCString(), this.canonicalHeaders(amzHeaders).join("\n"), "/" + this.bucket + resource].join("\n");
+    data = ["PUT", md5, contentType, date.toUTCString(), this.canonicalHeaders(amzHeaders).join("\n"), "/" + this.bucket + "/" + resource].join("\n");
     return crypto.createHmac('sha1', this.awsSecret).update(data).digest('base64');
   };
   S3Put.prototype.canonicalHeaders = function(headers) {
